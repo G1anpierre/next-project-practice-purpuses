@@ -87,9 +87,11 @@ const Home: NextPage = () => {
     <div className={styles.container}>
       <div className={styles.header}>
         <h1 className={styles.title}>Rick An Morty</h1>
-        <div>
-          <input type="text" placeholder="search" ref={searchRef} />
-          <button onClick={handleSearch}>Search</button>
+        <div className={styles.inputContainer}>
+          <div>
+            <input type="text" placeholder="search" ref={searchRef} />
+            <button onClick={handleSearch}>Search</button>
+          </div>
         </div>
       </div>
       <div>
@@ -114,7 +116,7 @@ const Home: NextPage = () => {
           ))}
         </ul>
       </div>
-      <div>
+      <div className={styles.loadmoreContainer}>
         <button onClick={handleLoadMore}>Load More</button>
       </div>
     </div>
