@@ -1,7 +1,6 @@
 import type {NextPage} from 'next'
-import Head from 'next/head'
 import Image from 'next/image'
-import {useEffect, useState, useCallback, useRef} from 'react'
+import {useEffect, useState, useRef} from 'react'
 import styles from '../styles/Home.module.css'
 import Link from 'next/link'
 import type {CharacterType, StateCharactersType} from '../types/character'
@@ -49,7 +48,6 @@ const Home: NextPage = () => {
       `https://rickandmortyapi.com/api/character/?page=2&name=${wordSearch}`,
     )
     const data = await response.json()
-    console.log('data :', data)
     setCharactersState({
       status: 'resolve',
       characters: data.results,
@@ -76,12 +74,9 @@ const Home: NextPage = () => {
   const handleSearch = () => {
     if (searchRef.current) {
       const wordSearch = searchRef.current.value
-      console.log('handle Search', wordSearch)
       getFilter(wordSearch)
     }
   }
-
-  console.log('info :', info)
 
   return (
     <div className={styles.container}>

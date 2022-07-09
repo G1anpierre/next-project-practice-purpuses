@@ -1,0 +1,9 @@
+.container {
+  padding: 15px;
+}
+
+.navElements {
+  display: flex;
+  gap: 20px;
+  list-style: none;
+}
