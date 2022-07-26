@@ -1,13 +1,14 @@
-import React, {FC, useState, useEffect} from 'react'
+import React, {FC, useState, useEffect, useCallback} from 'react'
 import {useRouter} from 'next/router'
 import styles from '../../styles/Locations.module.css'
 
 const Locations: FC = () => {
   const router = useRouter()
   const {locationId} = router.query
+  const {pageId} = router.query
 
   const [page, setPage] = useState(1)
-  const [locations, setLocations] = useState([])
+  const [locations, setLocations] = useState<any>([])
   const [specificLocation, setSpecificLocation] = useState({
     type: '',
     residents: [],
@@ -23,6 +24,15 @@ const Locations: FC = () => {
     router.push(router)
   }
 
+  let appendPageQuery = useCallback((id: string) => {
+    router.query.pageId = id
+    router.push(router)
+  }, [])
+
+  useEffect(() => {
+    appendPageQuery(page.toString())
+  }, [page, appendPageQuery])
+
   useEffect(() => {
     if (locationId) {
       getSpecificLocation(locationId)
@@ -30,6 +40,12 @@ const Locations: FC = () => {
       getAllLocations()
     }
   }, [locationId])
+
+  useEffect(() => {
+    if (pageId) {
+      getAllLocations(pageId)
+    }
+  }, [pageId])
 
   useEffect(() => {
     const getResidents = async () => {
@@ -45,10 +61,13 @@ const Locations: FC = () => {
     getResidents()
   }, [specificLocation])
 
-  const getAllLocations = async () => {
-    const response = await fetch('https://rickandmortyapi.com/api/location')
+  const getAllLocations = async (id: string | string[] = '1') => {
+    const response = await fetch(
+      `https://rickandmortyapi.com/api/location?page=${id}`,
+    )
     const data = await response.json()
-    setLocations(data.results)
+    const updatedData = [...locations, ...data.results]
+    setLocations(updatedData)
   }
 
   const getSpecificLocation = async (id: string | string[]) => {
@@ -85,7 +104,7 @@ const Locations: FC = () => {
           </li>
         ))}
       </ul>
-      <button onClick={handleMore}>load more</button>
+      <button onClick={() => handleMore()}>load more</button>
     </div>
   )
 }
