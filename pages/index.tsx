@@ -2,6 +2,7 @@ import type {NextPage} from 'next'
 import Image from 'next/image'
 import {useEffect, useState, useRef} from 'react'
 import styles from '../styles/Home.module.css'
+import {useRouter} from 'next/router'
 import Link from 'next/link'
 import type {CharacterType, StateCharactersType} from '../types/character'
 
@@ -13,16 +14,21 @@ const Home: NextPage = () => {
       error: null,
     })
   const [info, setInfo] = useState({})
-  const [pageStatus, setPageStatus] = useState(1)
+  const router = useRouter()
+  const {pageId} = router.query
 
-  const fetchNextUser = useRef(() => {})
+  // const [pageStatus, setPageStatus] = useState(1)
+
+  const countRef = useRef(1)
+
+  const fetchNextUser = useRef((count: number) => {})
   const searchRef = useRef<HTMLInputElement>(null)
 
-  fetchNextUser.current = async () => {
+  fetchNextUser.current = async (count: number) => {
     try {
       setCharactersState({status: 'pending', characters: [], error: null})
       const response = await fetch(
-        `https://rickandmortyapi.com/api/character/?page=${pageStatus}`,
+        `https://rickandmortyapi.com/api/character/?page=${count}`,
       )
       const character = await response.json()
       const updateCharacters = [...characters, ...character.results]
@@ -56,11 +62,32 @@ const Home: NextPage = () => {
   }
 
   useEffect(() => {
-    fetchNextUser.current()
-  }, [pageStatus])
+    if (pageId) {
+      countRef.current = Number(pageId)
+      fetchNextUser.current(Number(pageId))
+    } else {
+      fetchNextUser.current(countRef.current)
+    }
+  }, [pageId])
+
+  let appendQuery = (id: number) => {
+    // router.query.pageId = id.toString()
+    router.push({pathname: '/', query: {pageId: id.toString()}}, undefined, {
+      shallow: true,
+    })
+  }
 
   const handleLoadMore = () => {
-    setPageStatus(prev => prev + 1)
+    // setPageStatus(prev => prev + 1)
+    countRef.current += 1
+    appendQuery(countRef.current)
+  }
+
+  const handleSearch = () => {
+    if (searchRef.current) {
+      const wordSearch = searchRef.current.value
+      getFilter(wordSearch)
+    }
   }
 
   if (status === 'loading') {
@@ -71,12 +98,9 @@ const Home: NextPage = () => {
     return <div>{error}</div>
   }
 
-  const handleSearch = () => {
-    if (searchRef.current) {
-      const wordSearch = searchRef.current.value
-      getFilter(wordSearch)
-    }
-  }
+  console.log('pageId', Number(pageId))
+
+  console.log('countRef', countRef.current)
 
   return (
     <div className={styles.container}>
@@ -91,8 +115,8 @@ const Home: NextPage = () => {
       </div>
       <div>
         <ul className={styles.list}>
-          {characters.map((character: CharacterType) => (
-            <li key={character.id}>
+          {characters.map((character: CharacterType, index) => (
+            <li key={`${character.id}-${index}`}>
               <div>
                 <Link href={`/character/${character.id}`}>
                   <a>
