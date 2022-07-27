@@ -1,4 +1,4 @@
-import React, {FC, useState, useEffect, useCallback} from 'react'
+import React, {FC, useState, useEffect, useCallback, useRef} from 'react'
 import {useRouter} from 'next/router'
 import styles from '../../styles/Locations.module.css'
 
@@ -7,7 +7,7 @@ const Locations: FC = () => {
   const {locationId} = router.query
   const {pageId} = router.query
 
-  const [page, setPage] = useState(1)
+  const pageCountRef = useRef(1)
   const [locations, setLocations] = useState<any>([])
   const [specificLocation, setSpecificLocation] = useState({
     type: '',
@@ -15,23 +15,21 @@ const Locations: FC = () => {
   })
   const [residentsData, setResidentsData] = useState<any>([])
 
-  const handleMore = () => {
-    setPage(page + 1)
+  const handleMoreLocations = () => {
+    pageCountRef.current += 1
+    appendPageQuery(pageCountRef.current)
   }
 
   let appendQuery = (id: string) => {
-    router.query.locationId = id
-    router.push(router)
+    router.push({query: {locationId: id}}, undefined, {shallow: true})
   }
 
-  let appendPageQuery = useCallback((id: string) => {
-    router.query.pageId = id
-    router.push(router)
-  }, [])
-
-  useEffect(() => {
-    appendPageQuery(page.toString())
-  }, [page, appendPageQuery])
+  let appendPageQuery = useCallback(
+    (id: number) => {
+      router.push({query: {pageId: id.toString()}}, undefined, {shallow: true})
+    },
+    [router],
+  )
 
   useEffect(() => {
     if (locationId) {
@@ -81,9 +79,9 @@ const Locations: FC = () => {
   return (
     <div>
       <ul className={styles.list}>
-        {locations.map((location: any) => (
+        {locations.map((location: any, index: number) => (
           <li
-            key={location.id}
+            key={`${location.id}-${index}`}
             onClick={() => appendQuery(location.id)}
             className={styles.item}
           >
@@ -104,7 +102,7 @@ const Locations: FC = () => {
           </li>
         ))}
       </ul>
-      <button onClick={() => handleMore()}>load more</button>
+      <button onClick={() => handleMoreLocations()}>load more</button>
     </div>
   )
 }

@@ -7,7 +7,7 @@ export const Navbar = () => {
     <nav className={styles.container}>
       <ul className={styles.navElements}>
         <li>
-          <Link href="/">
+          <Link href="/characters">
             <a>Characters</a>
           </Link>
         </li>
