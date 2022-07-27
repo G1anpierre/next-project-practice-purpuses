@@ -6,14 +6,31 @@ const Locations: FC = () => {
   const router = useRouter()
   const {locationId} = router.query
   const {pageId} = router.query
-
-  const pageCountRef = useRef(1)
   const [locations, setLocations] = useState<any>([])
   const [specificLocation, setSpecificLocation] = useState({
     type: '',
     residents: [],
   })
   const [residentsData, setResidentsData] = useState<any>([])
+  const pageCountRef = useRef(1)
+  const getAllLocations = useRef(async (id: string | string[]) => {})
+
+  getAllLocations.current = async (id: string | string[] = '1') => {
+    const response = await fetch(
+      `https://rickandmortyapi.com/api/location?page=${id}`,
+    )
+    const data = await response.json()
+    const updatedData = [...locations, ...data.results]
+    setLocations(updatedData)
+  }
+
+  const getSpecificLocation = async (id: string | string[]) => {
+    const response = await fetch(
+      `https://rickandmortyapi.com/api/location/${id}`,
+    )
+    const data = await response.json()
+    setSpecificLocation(data)
+  }
 
   const handleMoreLocations = () => {
     pageCountRef.current += 1
@@ -35,13 +52,13 @@ const Locations: FC = () => {
     if (locationId) {
       getSpecificLocation(locationId)
     } else {
-      getAllLocations()
+      getAllLocations.current('1')
     }
   }, [locationId])
 
   useEffect(() => {
     if (pageId) {
-      getAllLocations(pageId)
+      getAllLocations.current(pageId)
     }
   }, [pageId])
 
@@ -58,23 +75,6 @@ const Locations: FC = () => {
 
     getResidents()
   }, [specificLocation])
-
-  const getAllLocations = async (id: string | string[] = '1') => {
-    const response = await fetch(
-      `https://rickandmortyapi.com/api/location?page=${id}`,
-    )
-    const data = await response.json()
-    const updatedData = [...locations, ...data.results]
-    setLocations(updatedData)
-  }
-
-  const getSpecificLocation = async (id: string | string[]) => {
-    const response = await fetch(
-      `https://rickandmortyapi.com/api/location/${id}`,
-    )
-    const data = await response.json()
-    setSpecificLocation(data)
-  }
 
   return (
     <div>
