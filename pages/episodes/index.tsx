@@ -1,6 +1,7 @@
 import React, {Fragment, useRef} from 'react'
 import {useInfiniteQuery} from '@tanstack/react-query'
 import {useRouter} from 'next/router'
+import {GetServerSideProps} from 'next'
 
 export type Episode = {
   id: number
@@ -12,13 +13,13 @@ export type Episode = {
   created: string
 }
 
-const Episodes = () => {
+const Episodes = ({pageId}: {pageId: string}) => {
   const router = useRouter()
-  const {pageId} = router.query
-  const pageCountRef = useRef(pageId || 1)
+  console.log('pageId', pageId)
+  const pageCountRef = useRef(undefined)
   const {data, isLoading, fetchNextPage, hasNextPage} = useInfiniteQuery(
     ['infiniteEpisodes'],
-    async ({pageParam = pageCountRef.current}) =>
+    async ({pageParam = pageId || 1}) =>
       await fetch(
         `https://rickandmortyapi.com/api/episode/?page=${pageParam}`,
       ).then(result => result.json()),
@@ -33,10 +34,10 @@ const Episodes = () => {
   )
 
   const loadMoreEpisodes = () => {
-    fetchNextPage()
     router.push(`episodes/?pageId=${pageCountRef.current}`, undefined, {
       shallow: true,
     })
+    fetchNextPage()
   }
 
   console.log('pageCountRef', pageCountRef.current)
@@ -64,3 +65,13 @@ const Episodes = () => {
 }
 
 export default Episodes
+
+export const getServerSideProps: GetServerSideProps = async context => {
+  const {query} = context
+  const {pageId} = query
+  return {
+    props: {
+      pageId: pageId?.toString() || '1',
+    },
+  }
+}
