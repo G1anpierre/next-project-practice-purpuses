@@ -1,6 +1,6 @@
-import React, {Fragment} from 'react'
-import {dehydrate, QueryClient, useInfiniteQuery} from '@tanstack/react-query'
-import {GetServerSideProps} from 'next'
+import React, {Fragment, useRef} from 'react'
+import {useInfiniteQuery} from '@tanstack/react-query'
+import {useRouter} from 'next/router'
 
 export type Episode = {
   id: number
@@ -13,15 +13,19 @@ export type Episode = {
 }
 
 const Episodes = () => {
+  const router = useRouter()
+  const {pageId} = router.query
+  const pageCountRef = useRef(pageId || 1)
   const {data, isLoading, fetchNextPage, hasNextPage} = useInfiniteQuery(
     ['infiniteEpisodes'],
-    async ({pageParam = 1}) =>
+    async ({pageParam = pageCountRef.current}) =>
       await fetch(
         `https://rickandmortyapi.com/api/episode/?page=${pageParam}`,
       ).then(result => result.json()),
     {
       getNextPageParam: (lastPage, _allPages) => {
         if (lastPage.info.next) {
+          pageCountRef.current = lastPage.info.next.split('=')[1]
           return lastPage.info.next.split('=')[1]
         }
       },
@@ -30,9 +34,12 @@ const Episodes = () => {
 
   const loadMoreEpisodes = () => {
     fetchNextPage()
+    router.push(`episodes/?pageId=${pageCountRef.current}`, undefined, {
+      shallow: true,
+    })
   }
 
-  console.log('data', data)
+  console.log('pageCountRef', pageCountRef.current)
 
   return (
     <>
@@ -57,19 +64,3 @@ const Episodes = () => {
 }
 
 export default Episodes
-
-// export const getServerSideProps: GetServerSideProps = async context => {
-//   let page = 2
-//   if (context.query.page) {
-//     page = parseInt(context.query.page)
-//   }
-//   const queryClient = new QueryClient()
-//   await queryClient.prefetchQuery(
-//     ['infiniteEpisodes', page],
-//     async () =>
-//       await fetch(`https://rickandmortyapi.com/api/episode/?page=${page}`).then(
-//         result => result.json(),
-//       ),
-//   )
-//   return {props: {dehydratedState: dehydrate(queryClient)}}
-// }
