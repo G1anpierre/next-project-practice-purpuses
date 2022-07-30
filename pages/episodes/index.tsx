@@ -15,7 +15,6 @@ export type Episode = {
 
 const Episodes = ({pageId}: {pageId: string}) => {
   const router = useRouter()
-  console.log('pageId', pageId)
   const pageCountRef = useRef(undefined)
   const {data, isLoading, fetchNextPage, hasNextPage} = useInfiniteQuery(
     ['infiniteEpisodes'],
@@ -39,8 +38,6 @@ const Episodes = ({pageId}: {pageId: string}) => {
     })
     fetchNextPage()
   }
-
-  console.log('pageCountRef', pageCountRef.current)
 
   return (
     <>

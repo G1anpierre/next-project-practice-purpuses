@@ -21,6 +21,11 @@ export const Navbar = () => {
             <a>Episode</a>
           </Link>
         </li>
+        <li>
+          <Link href="/about">
+            <a>About</a>
+          </Link>
+        </li>
       </ul>
     </nav>
   )
